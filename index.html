@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Stonks</title>
+		<script type="text/javascript">
+			// list of items
+			var items = ["Burger", "French Fry"];
+
+			// list of default item prices
+			var price = [2, 1];
+
+			// how often prices will randomize (in seconds)
+			var stonksInterval = 10;
+
+			// convert seconds to milliseconds
+			stonksInterval = stonksInterval * 1000;
+			
+			function getPlayerData(key)
+			{
+				return localStorage.getItem(key);
+			};
+			
+			function setPlayerData(key, value)
+			{
+				localStorage.setItem(key, value);
+				updateVisuals();
+			};
+			
+			function REST_IN_PEPPERONI()
+			{
+				var wantsPerish = confirm("If you click OK on this dialog box, ALL of your game data will be erased and unrecoverable!");
+				if (wantsPerish == true)
+				{
+					localStorage.setItem("Money", null);
+					localStorage.setItem("Inventory", null);
+					localStorage.setItem("Prices", null);
+					alert("All data has been erased!");
+					window.location.reload();
+				};
+			};
+
+			function buyItem(index)
+			{
+				console.log(index);
+				if (parseInt(getPlayerData("Prices").split(",")[index]) <= parseInt(getPlayerData("Money")))
+				{
+					setPlayerData("Money", parseInt(getPlayerData("Money")) - parseInt(getPlayerData("Prices").split(",")[index]));
+					var TMP_0001 = getPlayerData("Inventory").split(",");
+					TMP_0001[index] = parseInt(parseInt(TMP_0001[index]) + 1);
+					setPlayerData("Inventory", TMP_0001);
+				};
+			};
+
+			function sellItem(index)
+			{
+				console.log(index);
+				if (parseInt(getPlayerData("Inventory").split(",")[index]) > 0)
+				{
+					setPlayerData("Money", parseInt(getPlayerData("Money")) + parseInt(getPlayerData("Prices").split(",")[index]));
+					var TMP_0001 = getPlayerData("Inventory").split(",");
+					TMP_0001[index] = parseInt(parseInt(TMP_0001[index]) - 1);
+					setPlayerData("Inventory", TMP_0001);
+				};
+			};
+			
+			function updateVisuals()
+			{
+				document.querySelector("#moneyCount").innerText = "$" + getPlayerData("Money").toString();
+				document.body.querySelectorAll(".item").forEach(HTMLElement => fn_0002(HTMLElement) );
+			};
+
+			function fn_0001(item)
+			{
+						var lst = document.querySelector("#itemList");
+						var itz = [];
+						var cont = document.createElement("DIV");
+						cont.className = "item";
+						cont.id = item;
+						var txt = document.createElement("H1");
+						txt.innerHTML = item + "<br>Price: $" + getPlayerData("Prices")[items.indexOf(item)] + "<br>You have " + getPlayerData("Inventory")[items.indexOf(item)] + ".";
+						cont.appendChild(txt);
+						var btnBuy = document.createElement("BUTTON");
+						btnBuy.innerText = "+";
+						btnBuy.onclick = new Function("buyItem(" + items.indexOf(item) + ")");
+						cont.appendChild(btnBuy);
+						var btnSell = document.createElement("BUTTON");
+						btnSell.innerText = "-";
+						btnSell.onclick = new Function("sellItem(" + items.indexOf(item) + ")");
+						cont.appendChild(btnSell);
+						lst.appendChild(cont);
+						itz.push(cont);
+						return itz;
+			};
+
+			function fn_0002(el)
+			{
+				var item = el.id;
+				console.log(el);
+				el.getElementsByTagName("H1")[0].innerHTML = item + "<br>Price: $" + getPlayerData("Prices").split(",")[items.indexOf(item)] + "<br>You have " + getPlayerData("Inventory").split(",")[items.indexOf(item)] + ".";
+			};
+
+			function fn_0003(prc)
+			{
+				if (window._temp_prc[price.indexOf(prc)] == undefined)
+				{
+					window._temp_prc[price.indexOf(prc)] = parseInt(prc);
+					console.log("Set index " + price.indexOf(prc) + " of prices to " + parseInt(prc));
+				};
+			};
+
+			function fn_0004(index)
+			{
+				if (window._temp_inv[index] == undefined)
+				{
+					window._temp_inv[index] = 0;
+					console.log("Set index " + index + " of prices to " + 0);
+				};
+			};
+			
+			function createItems()
+			{
+				items.forEach(item => fn_0001(item) );
+			};
+
+			// stockmarket veri gud
+			function randomizePrices()
+			{
+				console.log("stonck");
+				var _stk_chosenItemIndex = Math.floor(Math.random()*items.length);
+				var _stk_addOrSubtract = Math.floor(Math.random() * 2);
+				var _stk_diff = Math.floor(Math.random() * 11);
+				var _stk_temp_prc = getPlayerData("Prices").split(",");
+				// add
+				if (_stk_addOrSubtract == 0)
+				{
+					_stk_temp_prc[_stk_chosenItemIndex] = parseInt(parseInt(_stk_temp_prc[_stk_chosenItemIndex]) + _stk_diff);
+				} else
+				{
+					// subtract
+					if (_stk_addOrSubtract == 1)
+					{
+						if (_stk_diff >= parseInt(_stk_temp_prc[_stk_chosenItemIndex]))
+						{
+							_stk_diff = parseInt(parseInt(_stk_temp_prc[_stk_chosenItemIndex]) - 1);
+						};
+						_stk_temp_prc[_stk_chosenItemIndex] = parseInt(parseInt(_stk_temp_prc[_stk_chosenItemIndex]) - _stk_diff);
+					};
+				};
+				setPlayerData("Prices", _stk_temp_prc);
+			};
+			
+			function app()
+			{
+				createItems();
+				updateVisuals();
+				if (getPlayerData("Money") == null || getPlayerData("Money") == 'null') { setPlayerData("Money", 100); };
+				if (getPlayerData("Inventory") == null || getPlayerData("Inventory") == 'null') { setPlayerData("Inventory", [0, 0]); };
+				if (getPlayerData("Prices") == null || getPlayerData("Prices") == 'null') { setPlayerData("Prices", price); };
+				window._temp_inv = getPlayerData("Inventory").split(",");
+				window._temp_prc = getPlayerData("Prices").split(",");
+				items.forEach(it => fn_0004(items.indexOf(it)));
+				price.forEach(prc => fn_0003(prc));
+				setPlayerData("Inventory", window._temp_inv);
+				setPlayerData("Prices", window._temp_prc);
+				setInterval(randomizePrices, stonksInterval);
+			};
+			
+			window.addEventListener('DOMContentLoaded', (event) => { app(); });
+		</script>
+		<style type="text/css">
+			#moneyDisplay
+			{
+				background-color: green;
+			};
+			
+			#REST-IN-PEPPERONI
+			{
+				background-color: red;
+				color: white;
+			};
+			
+			p, h1, h2, h3, h4, h5, h6, span
+			{
+				font-family: sans;
+			};
+		</style>
+	</head>
+	<body>
+		<center>
+			<div id="app">
+				<div id="moneyDisplay">
+					<br class="spacer">
+					<h1 id="moneyCount">Loading...</h1>
+					<br class="spacer">
+				</div>
+				<br class="spacer">
+				<div id="itemList">
+					
+				</div>
+				<br class="spacer">
+				<br class="spacer">
+				<br class="spacer">
+				<button id="REST-IN-PEPPERONI" onclick="REST_IN_PEPPERONI()">ERASE ALL DATA</button>
+			</div>
+		</center>
+	</body>
+</html>
